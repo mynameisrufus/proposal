@@ -1,28 +1,5 @@
 class ProposalToken < ActiveRecord::Base
 
-  # Validator for serialized arguments
-  #
-  # Validation only applies if the arguments are a hash and the expects option
-  # has been specified on the model.
-  #
-  # Example:
-  #
-  #   class User < ActiveRecord::Base
-  #     can_propose expects: [:role, :count]
-  #   end
-  #
-  #   user = User.proposal.make "user@example.com", role: 'admin'
-  #   user.valid? # => false
-  #
-  # It is also possible to use a Proc:
-  #
-  #   class User < ActiveRecord::Base
-  #     can_propose expects: arguments -> { arguments.first.is_a?(Integer) }
-  #   end
-  #
-  #   user = User.proposal.make "user@example.com", 10, 'foo'
-  #   user.valid? # => true
-  #
   class ArgumentsValidator < ActiveModel::Validator
     def validate_expected record, sym
       record.errors.add :arguments, "is missing #{sym}" unless
@@ -63,9 +40,11 @@ class ProposalToken < ActiveRecord::Base
 
   attr_accessor :expects
 
-  attr_accessible :email, :proposable, :arguments, :expires, :expects
+  attr_accessible :email, :context, :proposable, :proposable_type, :expires,
+                  :expect
 
-  validates_presence_of :email, :token, :proposable_type, :expires_at
+  validates_presence_of :email, :token, :proposable, :proposable_type,
+                        :expires_at
 
   validates_with ArgumentsValidator, if: -> { expects.present? }
 
@@ -74,9 +53,13 @@ class ProposalToken < ActiveRecord::Base
   serialize :arguments
 
   validates :email, uniqueness: {
-    scope: :proposable_type,
-    message: "already has an outstanding invitation"
+    scope: [:proposable_type, :context],
+    message: "already has an outstanding proposal"
   }
+
+  def self.context *args
+    where context: args.join(':')
+  end
 
   before_validation on: :create do
     self.token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
@@ -86,24 +69,30 @@ class ProposalToken < ActiveRecord::Base
     self.expires_at = Time.now + 1.year unless self.expires_at
   end
 
+  def proposable
+    @proposable ||= self.proposable_type.constantize
+  end
+
   def proposable= type
     self.proposable_type = type.to_s
   end
 
-  def proposable
-    @proposable ||= constantize_proposable
-  end
-
-  def constantize_proposable
-    self.proposable_type.nil? ? nil : self.proposable_type.constantize
+  def instance!
+    raise Proposal::RecordNotFound if instance.nil?
+    instance
   end
 
   def instance
-    @instance ||= self.proposable.find_by_email self.email
+    @instance ||= self.proposable.where(email: self.email).first
   end
 
-  def make email, *args
-    self.email = email
+  def self.find_or_return options
+    constraints = options.slice :email, :context, :proposable_type
+    token = where(constraints).first
+    token.nil? ? new(options) : token
+  end
+
+  def with *args
     if args.first.is_a?(Hash) && args.size == 1
       self.arguments = args.first
     else
@@ -112,8 +101,14 @@ class ProposalToken < ActiveRecord::Base
     self
   end
 
+  alias :with_args :with
+
   def action
-    instance.nil? ? :invite : :notify
+    case
+      when persisted? then :remind
+      when instance.nil? then :invite
+      else :notify
+    end
   end
 
   def notify?
@@ -122,6 +117,10 @@ class ProposalToken < ActiveRecord::Base
 
   def invite?
     action == :invite
+  end
+
+  def remind?
+    action == :remind
   end
 
   def accept
@@ -140,20 +139,39 @@ class ProposalToken < ActiveRecord::Base
     self.expires_at = time
   end
 
+  def acceptable?
+    !expired? && !accepted?
+  end
+
+  def reminded
+    touch :reminded_at if remind?
+    remind?
+  end
+
+  def reminded!
+    raise Proposal::RemindError, 'proposal has not been made' unless remind?
+    reminded
+  end
+
   def accept
-    touch :accepted_at unless expired?
-    !expired?
+    touch :accepted_at if acceptable?
+    acceptable?
   end
 
   def accept!
     raise Proposal::ExpiredError, 'token has expired' if expired?
+    raise Proposal::AccepetedError, 'token has been used' if accepted?
     touch :accepted_at
     true
   end
 
+  def to_s
+    token
+  end
+
   def method_missing(meth, *args, &block)
-    if meth.to_s == proposable_type.to_s.downcase
-      proposable
+    if meth.to_s == self.proposable_type.downcase
+      instance!
     else
       super
     end

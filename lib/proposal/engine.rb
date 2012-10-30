@@ -2,17 +2,25 @@ module Proposal
 
   class ExpiredError < StandardError; end
 
+  class AccepetedError < StandardError; end
+
+  class RemindError < StandardError; end
+
+  class RecordNotFound < StandardError; end
+
   class Engine < ::Rails::Engine
     isolate_namespace Proposal
 
     module CanPropose
       module ClassMethods
         def can_propose options = {}
-          @proposal_options = options.merge proposable: self
+          @proposal_options = options.merge proposable_type: self.to_s
         end
 
-        def proposal
-          ProposalToken.new @proposal_options
+        def propose email, *args
+          context = args.empty? ? nil : args.join(':')
+          options = @proposal_options.merge email: email, context: context
+          ProposalToken.find_or_return options
         end
 
         def proposals

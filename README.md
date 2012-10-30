@@ -15,56 +15,98 @@ And then execute:
 
 Then run migrations to add the `proposal_tokens` table:
 
-    $ gem install proposal
-
     $ rake proposal:install:migrations
     $ rake db:migrate
 
-## Usage
+## Proposable Models
 
-    class User < ActiveRecord::Base
-      can_propose expires: Time.now + 10.days
-    end
+```ruby
+class User < ActiveRecord::Base
+  can_propose expires: Time.now + 10.days
+end
+```
 
-    proposal = User.proposal.make 'user@example.com'
+## Making Proposals
 
-    # If user needs an invite
-    proposal.action # => :invite
+When your token is return you need to check what todo next, for example if the
+user does not exist they then need to get sent an invitation.
 
-    # If user needs to be notified
-    proposal.action # => :notify
+```ruby
+proposal = User.propose('user@example.com')
+proposal.action #=> :invite
+if proposal.save!
+  @url = acceptance_url(token: proposal)
+  # send out invitation
+end
+```
 
-    # If proposal action is notify then you can choose to send out a seperate
-    # kind of invitation or just add them to what they are being invited to and
-    # then just notify them.
-    if proposal.notify?
-      Project.users << proposal.user
-    end
+Conversely if they are already a user then they need to get an email inviting
+them or an email notifying that they have been added to something.
 
-    if proposal.save
-      if proposal.notify?
-        UserMailer.notify_email @proposal
-      else
-        UserMailer.invitation_email @proposal
-      end
-    end
+```ruby
+proposal = User.propose('user@example.com')
+proposal.action #=> :notify
+if proposal.save!
+  @project.users << proposal.user
+  # send out notification
+end
+```
 
-    proposal = User.proposal.find 'pVBJYdr3zH4B9yXWwsmy'
+Finally if the user already has an outstanding invitation they may just need a
+reminder.
 
-    proposal.accepted?
-    proposal.expired?
-    proposal.accept
-    proposal.valid?
-    proposal.errors
+```ruby
+proposal = User.propose('user@example.com')
+proposal.action #=> :remind
+if proposal.reminded!
+  # send out reminder
+end
+```
 
-    proposal = User.proposal.find! 'pVBJYdr3zH4B9yXWwsmy'
-    => Proposal::ExpiredError # token expired
-    => ActiveRecord::RecordNotFound # could not find proposal token
+All actions have convenience methods for example:
 
-    proposal.accept!
-    => Proposal::AccepetedError # token allready accepted
+```ruby
+proposal.notify?
+```
 
-See the dummy app in the test dir on how you might use it in a controller.
+## Accepting Proposals
+
+```ruby
+proposal = User.proposals.find_by_token 'pVBJYdr3zH4B9yXWwsmy'
+
+proposal.accepted? #= false
+proposal.expired? #=> false
+proposal.acceptable? #=> true
+
+if proposal.accept!
+  @project.users << proposal.user
+end
+```
+
+## Proposal Arguments
+
+You may need to store custom arguments such as the role a user may get upon
+acceptance. It also has a validator that takes an array, hash or proc.
+
+```ruby
+class User < ActiveRecord::Base
+  can_propose expects: :role
+end
+
+proposal = User.propose('user@example.com').with_args(role: 'admin')
+proposal.arguments #=> :role => 'admin'
+```
+
+## Proposal Context
+
+In some situations you might want to send out many invitations to different
+things.
+
+```ruby
+User.propose('user@example.com', Project)
+User.propose('user@example.com', Task)
+User.propose('user@example.com', Task, @task.id)
+```
 
 ## Contributing
 
