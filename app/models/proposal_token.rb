@@ -43,7 +43,7 @@ class ProposalToken < ActiveRecord::Base
   attr_accessor :expects
 
   attr_accessible :email, :proposable, :proposable_type, :expires, :expect,
-                  :resource
+                  :resource, :args
 
   validates_presence_of :email, :token, :proposable, :proposable_type,
                         :expires_at
@@ -58,10 +58,6 @@ class ProposalToken < ActiveRecord::Base
     scope: [:proposable_type, :resource_type, :resource_id],
     message: "already has an outstanding proposal"
   }
-
-  def self.context *args
-    where context: args.join(':')
-  end
 
   before_validation on: :create do
     self.token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
@@ -79,13 +75,13 @@ class ProposalToken < ActiveRecord::Base
     self.proposable_type = type.to_s
   end
 
-  def instance!
-    raise Proposal::RecordNotFound if instance.nil?
-    instance
+  def recipient!
+    raise Proposal::RecordNotFound if recipient.nil?
+    recipient
   end
 
-  def instance
-    @instance ||= self.proposable.where(email: self.email).first
+  def recipient
+    @recipient ||= self.proposable.where(email: self.email).first
   end
 
   def self.find_or_new options
@@ -104,21 +100,19 @@ class ProposalToken < ActiveRecord::Base
                            resource: resource
   end
 
-  def with *args
-    if args.first.is_a?(Hash) && args.size == 1
-      self.arguments = args.first
+  def args= args_array
+    if args_array.first.is_a?(Hash) && args_array.size == 1
+      self.arguments = args_array.first
     else
-      self.arguments = args
+      self.arguments = args_array
     end
     self
   end
 
-  alias :with_args :with
-
   def action
     case
       when persisted? then :remind
-      when instance.nil? then :invite
+      when recipient.nil? then :invite
       else :notify
     end
   end
@@ -183,13 +177,4 @@ class ProposalToken < ActiveRecord::Base
   def to_s
     token
   end
-
-  def method_missing(meth, *args, &block)
-    if meth.to_s == self.proposable_type.downcase
-      instance!
-    else
-      super
-    end
-  end
-
 end

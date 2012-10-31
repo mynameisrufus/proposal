@@ -28,11 +28,17 @@ end
 
 ## Making Proposals
 
-When your token is return you need to check what to do next, for example if the
-user does not exist they then need to get sent an invitation.
+For a basic proposal to the application you simply call:
 
 ```ruby
-@proposal = User.propose('user@example.com').to(@project)
+@proposal = User.propose.to('user@example.com')
+```
+
+When your token is returned you need to check what to do next, for example if
+the user does not exist they then need to get sent an invitation.
+
+```ruby
+@proposal = User.propose(@project).to('user@example.com')
 @proposal.action #=> :invite
 if @proposal.save!
   @url = acceptance_url(token: @proposal)
@@ -44,10 +50,10 @@ Conversely if they are already a user then they need to get an email inviting
 them or an email notifying that they have been added to something.
 
 ```ruby
-@proposal = User.propose('user@example.com').to(@project)
+@proposal = User.propose(@project).to('user@example.com')
 @proposal.action #=> :notify
 if @proposal.save!
-  @project.users << proposal.user
+  @project.users << proposal.recipient
   # send out notification
 end
 ```
@@ -56,7 +62,7 @@ Finally if the user already has an outstanding invitation they may just need a
 reminder.
 
 ```ruby
-@proposal = User.propose('user@example.com').to(@project)
+@proposal = User.propose(@project).to('user@example.com')
 @proposal.action #=> :remind
 if @proposal.reminded!
   # send out reminder
@@ -69,16 +75,6 @@ All actions have convenience methods for example:
 @proposal.notify?
 ```
 
-## Proposal Resources
-
-In some situations you might want to send out many invitations to different
-things.
-
-```ruby
-@proposal = User.propose('user@example.com').to(@project)
-@proposal.resource # => Project
-```
-
 ## Accepting Proposals
 
 ```ruby
@@ -89,7 +85,7 @@ things.
 @proposal.acceptable? #=> true
 
 if @proposal.accept!
-  @project.users << @proposal.user
+  @proposal.resource.users << @proposal.recipient
 end
 ```
 
@@ -103,7 +99,7 @@ class User < ActiveRecord::Base
   can_propose expects: :role
 end
 
-@proposal = User.propose('user@example.com').with(role: 'admin')
+@proposal = User.propose.with(role: 'admin').to('user@example.com')
 @proposal.arguments # => :role => 'admin'
 ```
 
@@ -116,7 +112,7 @@ class User < ActiveRecord::Base
   can_propose expires: -> { Time.now + 10.days }
 end
 
-@proposal = User.propose('user@example.com', expires_at: Time.now - 1.day)
+@proposal = User.propose.to('user@example.com', expires_at: Time.now - 1.day)
 @proposal.expired? # => true
 ```
 
