@@ -17,10 +17,9 @@ module Proposal
           @proposal_options = options.merge proposable_type: self.to_s
         end
 
-        def propose email, *args
-          context = args.empty? ? nil : args.join(':')
-          options = @proposal_options.merge email: email, context: context
-          ProposalToken.find_or_return options
+        def propose email, options = {}
+          opts = @proposal_options.merge(email: email).merge(options)
+          ProposalToken.find_or_new opts
         end
 
         def proposals
@@ -28,7 +27,7 @@ module Proposal
         end
       end
 
-      def self.included(base)
+      def self.included base
         base.send :extend, ClassMethods
       end
     end

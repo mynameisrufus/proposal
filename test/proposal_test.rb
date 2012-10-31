@@ -33,15 +33,25 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal User.proposals, [proposal]
   end
 
-  test "should accept a context" do
-    context_one = User.propose email, :one
+  test "should accept a resource" do
+    project_one = Project.create!
+
+    context_one = User.propose(email).to(project_one)
     assert_equal true, context_one.save
 
-    context_two = User.propose email, :two
+    project_two = Project.create!
+
+    context_two = User.propose(email).to(project_two)
     assert_equal true, context_two.save
 
-    context_three = User.propose email, :two
+    context_three = User.propose(email).to(project_two)
     assert_equal context_two, context_three
+  end
+
+  test "should return the resource" do
+    project = Project.create!
+    proposal = User.propose(email).to(project)
+    assert_equal proposal.resource, project
   end
 
   test "should return all arguments" do

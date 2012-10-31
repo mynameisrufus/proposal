@@ -1,5 +1,7 @@
 class ProposalToken < ActiveRecord::Base
 
+  belongs_to :resource, polymorphic: true
+
   class ArgumentsValidator < ActiveModel::Validator
     def validate_expected record, sym
       record.errors.add :arguments, "is missing #{sym}" unless
@@ -40,8 +42,8 @@ class ProposalToken < ActiveRecord::Base
 
   attr_accessor :expects
 
-  attr_accessible :email, :context, :proposable, :proposable_type, :expires,
-                  :expect
+  attr_accessible :email, :proposable, :proposable_type, :expires, :expect,
+                  :resource
 
   validates_presence_of :email, :token, :proposable, :proposable_type,
                         :expires_at
@@ -53,7 +55,7 @@ class ProposalToken < ActiveRecord::Base
   serialize :arguments
 
   validates :email, uniqueness: {
-    scope: [:proposable_type, :context],
+    scope: [:proposable_type, :resource_type, :resource_id],
     message: "already has an outstanding proposal"
   }
 
@@ -86,10 +88,20 @@ class ProposalToken < ActiveRecord::Base
     @instance ||= self.proposable.where(email: self.email).first
   end
 
-  def self.find_or_return options
-    constraints = options.slice :email, :context, :proposable_type
+  def self.find_or_new options
+    constraints = options.slice :email, :proposable_type
+    resource = options[:resource]
+    if !resource.nil? && resource.respond_to?(:id)
+      constraints.merge! resource_type: resource.class.to_s, resource_id: resource.id
+    end
     token = where(constraints).first
     token.nil? ? new(options) : token
+  end
+
+  def to resource
+    self.class.find_or_new email: self.email,
+                           proposable_type: self.proposable_type,
+                           resource: resource
   end
 
   def with *args
@@ -135,8 +147,11 @@ class ProposalToken < ActiveRecord::Base
     Time.now >= self.expires_at
   end
 
-  def expires= time
-    self.expires_at = time
+  def expires= expires_proc
+    unless expires_proc.is_a? Proc
+      raise ArgumentError, 'expires must be a proc'
+    end
+    self.expires_at = expires_proc.call
   end
 
   def acceptable?
