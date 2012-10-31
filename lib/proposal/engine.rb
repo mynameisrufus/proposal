@@ -29,6 +29,10 @@ module Proposal
       ProposalToken.find_or_new @options.merge(options).merge email: email
     end
 
+    def invite options
+      ProposalToken.find_or_new @options.merge(options)
+    end
+
     # Delegates to ORM object and returns all proposal objects for given type.
     def self.all type
       ProposalToken.where proposable_type: type.to_s
@@ -69,6 +73,10 @@ module Proposal
       # Delegate method to return all the proposals for the ORM object.
       def proposals
         Adapter.all self.to_s
+      end
+
+      def invite options
+        Adapter.new(@proposal_options).invite(options)
       end
     end
 

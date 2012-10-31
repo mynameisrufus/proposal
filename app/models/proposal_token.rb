@@ -73,12 +73,6 @@ class ProposalToken < ActiveRecord::Base
     token.nil? ? new(options) : token
   end
 
-  def to resource
-    self.class.find_or_new email: self.email,
-      proposable_type: self.proposable_type,
-      resource: resource
-  end
-
   def args= args_array
     if args_array.first.is_a?(Hash) && args_array.size == 1
       self.arguments = args_array.first
