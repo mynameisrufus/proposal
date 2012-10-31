@@ -20,6 +20,14 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal user, proposal.recipient
   end
 
+  test "should use invite method" do
+    user = User.create email: email
+    project = Project.create!
+    proposal = User.invite email: email, resource: project
+    assert_equal user, proposal.recipient
+    assert_equal project, proposal.resource
+  end
+
   test "should respond to the resource" do
     project = Project.create!
     user = User.create email: email

@@ -7,7 +7,7 @@ framework. Makes no fuss and no redundant records.
 
 Add this line to your application's Gemfile:
 
-    gem 'proposal'
+    gem 'proposal', git: git://github.com/mynameisrufus/proposal.git
 
 And then execute:
 
@@ -75,6 +75,12 @@ All actions have convenience methods for example:
 @proposal.notify?
 ```
 
+## Alternative syntax
+
+```ruby
+@proposal = User.invite email: 'users@example.com', resource: @project
+```
+
 ## Accepting Proposals
 
 ```ruby
@@ -115,6 +121,11 @@ end
 @proposal = User.propose.to('user@example.com', expires_at: Time.now - 1.day)
 @proposal.expired? # => true
 ```
+
+## Supported Ruby Versions
+
+* Ruby 1.9.2
+* Ruby 1.9.3
 
 ## Contributing
 
