@@ -7,7 +7,7 @@ framework. Makes no fuss and no redundant records.
 
 Add this line to your application's Gemfile:
 
-    gem 'proposal', git: git://github.com/mynameisrufus/proposal.git
+    gem 'proposal', git: 'git://github.com/mynameisrufus/proposal.git'
 
 And then execute:
 
