@@ -26,16 +26,16 @@ module Proposal
     # Method to return in instantiate the proposal object using an email
     # address.
     def to email, options = {}
-      ProposalToken.find_or_new @options.merge(options).merge email: email
+      Token.find_or_new @options.merge(options).merge email: email
     end
 
     def invite options
-      ProposalToken.find_or_new @options.merge(options)
+      Token.find_or_new @options.merge(options)
     end
 
     # Delegates to ORM object and returns all proposal objects for given type.
-    def self.all type
-      ProposalToken.where proposable_type: type.to_s
+    def self.where options
+      Token.where options
     end
   end
 
@@ -61,6 +61,11 @@ module Proposal
         @proposal_options = options.merge proposable_type: self.to_s
       end
 
+      # Getter for +@proposal_options+
+      def proposal_options
+        @proposal_options
+      end
+
       # Class method for returning a new instance of +Adapter+
       #
       # Optional +resource+ argument that the ORM stores a reference to. This
@@ -72,7 +77,7 @@ module Proposal
 
       # Delegate method to return all the proposals for the ORM object.
       def proposals
-        Adapter.all self.to_s
+        Adapter.where proposable_type: self.to_s
       end
 
       def invite options
@@ -80,8 +85,15 @@ module Proposal
       end
     end
 
+    module InstanceMethods
+      def proposals
+        Adapter.where resource_type: self.class.to_s, resource_id: self.id
+      end
+    end
+
     def self.included base
       base.send :extend, ClassMethods
+      base.send :include, InstanceMethods
     end
   end
 

@@ -11,13 +11,21 @@ class ProposalTest < ActiveSupport::TestCase
 
   test "user should have proposal" do
     assert_equal User.propose.class, Proposal::Adapter
-    assert_equal User.propose.to(email).class, ProposalToken
+    assert_equal User.propose.to(email).class, Proposal::Token
   end
 
   test "should respond to the recipient" do
     user = User.create email: email
     proposal = User.propose.to email
     assert_equal user, proposal.recipient
+  end
+
+  test "should return proposals for instance" do
+    user = User.create email: email
+    project = Project.create!
+    proposal = User.propose(project).to(email)
+    proposal.save
+    assert_equal [proposal], project.proposals 
   end
 
   test "should use invite method" do
