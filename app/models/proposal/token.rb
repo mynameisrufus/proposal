@@ -126,7 +126,7 @@ module Proposal
       Time.now >= self.expires_at
     end
 
-    def self.outstanding
+    def self.pending
       where('accepted_at IS NULL')
     end
 
