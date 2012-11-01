@@ -100,8 +100,7 @@ class ProposalTest < ActiveSupport::TestCase
   test "should validate arguments with symbol" do
     error_messages = ["must be a hash", "is missing role"]
     errors = { arguments: error_messages }
-    proposal = User.propose.to email
-    proposal.expects = :role
+    proposal = User.propose.to email, expects: :role
 
     assert_equal false, proposal.valid?
     assert_equal errors, proposal.errors.messages
@@ -122,8 +121,7 @@ class ProposalTest < ActiveSupport::TestCase
   test "should validate arguments with symbols" do
     error_messages = ["must be a hash", "is missing role", "is missing count"]
     errors = { arguments: error_messages }
-    proposal = User.propose.to email
-    proposal.expects = [:role, :count]
+    proposal = User.propose.to email, expects: [:role, :count]
 
     assert_equal false, proposal.valid?
     assert_equal errors, proposal.errors.messages
@@ -132,10 +130,9 @@ class ProposalTest < ActiveSupport::TestCase
   test "should validate arguments with a proc" do
     error_messages = ["is invalid"]
     errors = { arguments: error_messages }
-    proposal = User.propose.to email
-    proposal.expects = -> arguments do
+    proposal = User.propose.to email, expects: -> arguments {
       !arguments.nil? && !arguments.empty?
-    end
+    }
 
     assert_equal false, proposal.valid?
     assert_equal errors, proposal.errors.messages

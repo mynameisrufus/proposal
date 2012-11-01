@@ -79,10 +79,6 @@ module Proposal
       def proposals
         Adapter.where proposable_type: self.to_s
       end
-
-      def invite options
-        Adapter.new(@proposal_options).invite(options)
-      end
     end
 
     module InstanceMethods

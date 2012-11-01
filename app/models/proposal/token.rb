@@ -8,7 +8,7 @@ module Proposal
       :proposable,
       :proposable_type,
       :expires,
-      :expect,
+      :expects,
       :resource,
       :args
 

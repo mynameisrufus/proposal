@@ -75,12 +75,6 @@ All actions have convenience methods for example:
 @proposal.notify?
 ```
 
-## Alternative syntax
-
-```ruby
-@proposal = User.invite email: 'users@example.com', resource: @project
-```
-
 ## Accepting Proposals
 
 ```ruby
