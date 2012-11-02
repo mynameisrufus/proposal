@@ -29,10 +29,6 @@ module Proposal
       Token.find_or_new @options.merge(options).merge email: email
     end
 
-    def invite options
-      Token.find_or_new @options.merge(options)
-    end
-
     # Delegates to ORM object and returns all proposal objects for given type.
     def self.where options
       Token.where options

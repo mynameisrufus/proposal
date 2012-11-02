@@ -28,12 +28,31 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal [proposal], project.proposals 
   end
 
-  test "should use invite method" do
-    user = User.create email: email
-    project = Project.create!
-    proposal = User.invite email: email, resource: project
-    assert_equal user, proposal.recipient
-    assert_equal project, proposal.resource
+  test "should add errors when not acceptable accepted safe" do
+    errors = {:token=>["has been accepted"]}
+    proposal = User.propose.to email
+    proposal.save
+    assert_equal true, proposal.accept
+    assert_equal false, proposal.accept
+    assert_equal errors, proposal.errors.messages
+  end
+
+  test "should add errors when not acceptable accepted" do
+    errors = {:token=>["has been accepted"]}
+    proposal = User.propose.to email
+    proposal.save
+    proposal.accept!
+    assert_equal false, proposal.acceptable?
+    assert_equal errors, proposal.errors.messages
+  end
+
+  test "should add errors when not acceptable expired" do
+    errors = {:token=>["has expired"]}
+    proposal = User.propose.to email
+    proposal.save
+    proposal.expires = -> { Time.now - 1.day }
+    assert_equal false, proposal.acceptable?
+    assert_equal errors, proposal.errors.messages
   end
 
   test "should respond to the resource" do

@@ -114,10 +114,6 @@ module Proposal
       action == :remind
     end
 
-    def accept
-      touch :accepted_at
-    end
-
     def accepted?
       !accepted_at.nil?
     end
@@ -150,6 +146,8 @@ module Proposal
     end
 
     def acceptable?
+      errors.add :token, "has expired" if expired?
+      errors.add :token, "has been accepted" if accepted?
       !expired? && !accepted?
     end
 
@@ -164,8 +162,12 @@ module Proposal
     end
 
     def accept
-      touch :accepted_at if acceptable?
-      acceptable?
+      if acceptable?
+        touch :accepted_at
+        true
+      else
+        false
+      end
     end
 
     def accept!
