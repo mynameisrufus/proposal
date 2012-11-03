@@ -9,11 +9,10 @@ Gem::Specification.new do |s|
   s.version     = Proposal::VERSION
   s.authors     = ["Rufus Post"]
   s.email       = ["rufuspost@gmail.com"]
-  s.homepage    = "TODO"
-  s.summary     = "TODO: Summary of Proposal."
-  s.description = "TODO: Description of Proposal."
+  s.homepage    = "https://github.com/mynameisrufus/proposal"
+  s.summary     = "Simple unobtrusive token invitation engine for rails"
 
-  s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{app,config,db,lib}/**/*"] + ["Rakefile"]
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails", "~> 3.2"
