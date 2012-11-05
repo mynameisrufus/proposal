@@ -16,8 +16,8 @@ module Proposal
       @options = options
     end
 
-    def with *args
-      @options.merge! args: args
+    def with arguments
+      @options.merge! arguments: arguments
       self
     end
 

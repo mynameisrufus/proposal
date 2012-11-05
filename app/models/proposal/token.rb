@@ -1,10 +1,12 @@
 module Proposal
   class Token < ActiveRecord::Base
 
-    belongs_to :resource,
-      polymorphic: true
+    belongs_to :resource, polymorphic: true
+
+    serialize :arguments
 
     attr_accessible :email,
+      :arguments,
       :proposable,
       :proposable_type,
       :expires,
@@ -26,8 +28,6 @@ module Proposal
 
     validates_with ::Proposal::EmailValidator
 
-    serialize :arguments
-
     validates :email,
       uniqueness: {
         scope: [
@@ -45,6 +45,24 @@ module Proposal
     before_validation on: :create do
       self.expires_at = Time.now + 1.year unless self.expires_at
     end
+
+    validate :validate_expiry, :validate_accepted
+
+    def validate_expiry
+      errors.add :token, "has expired" if expired?
+    end
+
+    def validate_accepted
+      errors.add :token, "has been accepted" if accepted?
+    end
+
+    scope :pending, where('accepted_at IS NULL')
+
+    scope :accepted, where('accepted_at IS NOT NULL')
+
+    scope :expired, where('expires_at < ?', Time.now)
+
+    scope :reminded, where('reminded_at IS NOT NULL')
 
     def expects
       @expects || proposable.proposal_options[:expects]
@@ -74,32 +92,12 @@ module Proposal
         constraints.merge! resource_type: resource.class.to_s,
           resource_id: resource.id
       end
-      token = where(constraints).first
+      token = pending.where(constraints).first
       token.nil? ? new(options) : token
     end
 
-    def args= args_array
-      if args_array.first.is_a?(Hash) && args_array.size == 1
-        self.arguments = args_array.first
-      else
-        self.arguments = args_array
-      end
-      self
-    end
-
-    def args
-      self.arguments
-    end
-
     def action
-      case
-        when persisted?
-          :remind
-        when recipient.nil?
-          :invite
-        else
-          :notify
-      end
+      acceptable? ? acceptable_action : nil
     end
 
     def notify?
@@ -122,22 +120,7 @@ module Proposal
       Time.now >= self.expires_at
     end
 
-    def self.pending
-      where('accepted_at IS NULL')
-    end
-
-    def self.accepted
-      where('accepted_at IS NOT NULL')
-    end
-
-    def self.expired
-      where('expires_at < ?', Time.now)
-    end
-
-    def self.reminded
-      where('reminded_at IS NOT NULL')
-    end
-
+    # Calls proc to set the +expires_at+ attribute.
     def expires= expires_proc
       unless expires_proc.is_a? Proc
         raise ArgumentError, 'expires must be a proc'
@@ -145,22 +128,30 @@ module Proposal
       self.expires_at = expires_proc.call
     end
 
+    # Returns a +true+ if the proposal has not expired and the proposal has not
+    # already been accepted. Also calls +valid?+ to set +ActiveModel::Validator+
+    # validators for +expires_at+ and +accepted_at+.
     def acceptable?
-      errors.add :token, "has expired" if expired?
-      errors.add :token, "has been accepted" if accepted?
+      valid?
       !expired? && !accepted?
     end
 
+    # Sets +Time.now+ for the +reminded_at+ field in the database if the
+    # proposal action is +:remind+. This method can be called repeatedly.
     def reminded
       touch :reminded_at if remind?
       remind?
     end
 
+    # Equivalent to +reminded+ except it will raise a +Proposal::RemindError+ if
+    # the proposal action is not +:remind+
     def reminded!
-      raise Proposal::RemindError, 'proposal has not been made' unless remind?
+      raise Proposal::RemindError, 'proposal action is not remind' unless remind?
       reminded
     end
 
+    # Sets +Time.now+ for the +accepted_at+ field in the database if the
+    # proposal is acceptable.
     def accept
       if acceptable?
         touch :accepted_at
@@ -170,6 +161,9 @@ module Proposal
       end
     end
 
+    # Equivalent +accept+ except it will raise a +Proposal::ExpiredError+ if the
+    # proposal has expired or a +Proposal::AccepetedError+ if the proposal has
+    # already been accepted.
     def accept!
       raise Proposal::ExpiredError, 'token has expired' if expired?
       raise Proposal::AccepetedError, 'token has been used' if accepted?
@@ -179,6 +173,18 @@ module Proposal
 
     def to_s
       token
+    end
+
+    protected
+
+    # Returns a symbol of what action the proposal needs. This method should
+    # only be called if the the proposable is acceptable.
+    def acceptable_action
+      case
+      when persisted? then :remind
+      when recipient.nil? then :invite
+      else :notify
+      end
     end
   end
 end

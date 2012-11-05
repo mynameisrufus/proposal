@@ -99,7 +99,7 @@ class ProposalTest < ActiveSupport::TestCase
 
   test "should return all arguments" do
     arguments = ['admin', 1]
-    proposal = User.propose.with(*arguments).to('user@example.com')
+    proposal = User.propose.with(arguments).to('user@example.com')
     proposal.save
 
     retrieved = User.proposals.find_by_token proposal.token
@@ -131,7 +131,7 @@ class ProposalTest < ActiveSupport::TestCase
     proposal = User.propose.to email
     proposal.expects = :role
 
-    proposal.args = [{extra: 'foo'}]
+    proposal.arguments = { extra: 'foo' }
 
     assert_equal false, proposal.valid?
     assert_equal errors, proposal.errors.messages
@@ -187,18 +187,24 @@ class ProposalTest < ActiveSupport::TestCase
     user = User.create email: email
     existing = User.propose.to email
     existing.save!
-    existing.accept!
 
     proposal = User.propose.to email
     assert_equal :remind, proposal.action
     assert_equal true, proposal.remind?
   end
 
+  test "should not return no action if accepted" do
+    proposal = User.propose.to email
+    proposal.save!
+    proposal.accept!
+
+    assert_equal nil, proposal.action
+  end
+
   test "should set reminded" do
     user = User.create email: email
     existing = User.propose.to email
     existing.save!
-    existing.accept!
 
     proposal = User.propose.to email
     assert_equal true, proposal.reminded!
@@ -223,5 +229,17 @@ class ProposalTest < ActiveSupport::TestCase
     proposal = User.propose.to email
     proposal.save
     assert_equal proposal.token, proposal.to_s
+  end
+
+  test "should create a new token if accepted token exists" do
+    project = Project.create!
+    user = User.create email: email
+    existing = User.propose(project).to email
+    existing.save!
+    existing.accept!
+
+    proposal = User.propose(project).to email
+    assert_equal false, existing.acceptable?
+    assert_equal true, proposal.acceptable?
   end
 end
