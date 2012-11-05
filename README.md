@@ -7,7 +7,7 @@ framework. Makes no fuss and no redundant records.
 
 Add this line to your application's Gemfile:
 
-    gem 'proposal', git: 'git://github.com/mynameisrufus/proposal.git'
+    gem 'proposal'
 
 And then execute:
 
@@ -40,7 +40,7 @@ the user does not exist they then need to get sent an invitation.
 ```ruby
 @proposal = User.propose(@project).to('user@example.com')
 @proposal.action #=> :invite
-if @proposal.save!
+if @proposal.save
   @url = acceptance_url(token: @proposal)
   # send out invitation
 end
@@ -52,7 +52,7 @@ them or an email notifying that they have been added to something.
 ```ruby
 @proposal = User.propose(@project).to('user@example.com')
 @proposal.action #=> :notify
-if @proposal.save!
+if @proposal.save
   @project.users << proposal.recipient
   # send out notification
 end
@@ -64,7 +64,7 @@ reminder.
 ```ruby
 @proposal = User.propose(@project).to('user@example.com')
 @proposal.action #=> :remind
-if @proposal.reminded!
+if @proposal.reminded
   # send out reminder
 end
 ```
