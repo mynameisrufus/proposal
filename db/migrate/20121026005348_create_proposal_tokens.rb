@@ -22,7 +22,9 @@ CREATE UNIQUE INDEX proposal_idx ON proposal_tokens (
   email,
   proposable_type,
   resource_type,
-  resource_id
+  resource_id,
+  expires_at,
+  accepted_at
 )
     SQL
   end

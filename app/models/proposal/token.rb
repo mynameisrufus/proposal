@@ -11,8 +11,7 @@ module Proposal
       :proposable_type,
       :expires,
       :expects,
-      :resource,
-      :args
+      :resource
 
     attr_writer :expects
 
@@ -28,16 +27,6 @@ module Proposal
 
     validates_with ::Proposal::EmailValidator
 
-    validates :email,
-      uniqueness: {
-        scope: [
-          :proposable_type,
-          :resource_type,
-          :resource_id
-        ],
-        message: "already has an outstanding proposal"
-      }
-
     before_validation on: :create do
       self.token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
     end
@@ -47,6 +36,19 @@ module Proposal
     end
 
     validate :validate_expiry, :validate_accepted
+
+    validate :validate_uniqueness, on: :create
+
+    def validate_uniqueness
+      if self.class.pending.not_expired.where({
+          email: self.email,
+          proposable_type: self.proposable_type,
+          resource_type: self.resource_type,
+          resource_id: self.resource_id
+        }).exists?
+        errors.add :email, "already has an outstanding proposal"
+      end
+    end
 
     def validate_expiry
       errors.add :token, "has expired" if expired?
@@ -61,6 +63,8 @@ module Proposal
     scope :accepted, where('accepted_at IS NOT NULL')
 
     scope :expired, where('expires_at < ?', Time.now)
+
+    scope :not_expired, where('expires_at > ?', Time.now)
 
     scope :reminded, where('reminded_at IS NOT NULL')
 
@@ -92,7 +96,7 @@ module Proposal
         constraints.merge! resource_type: resource.class.to_s,
           resource_id: resource.id
       end
-      token = pending.where(constraints).first
+      token = pending.not_expired.where(constraints).first
       token.nil? ? new(options) : token
     end
 

@@ -239,7 +239,22 @@ class ProposalTest < ActiveSupport::TestCase
     existing.accept!
 
     proposal = User.propose(project).to email
+    proposal.save!
     assert_equal false, existing.acceptable?
     assert_equal true, proposal.acceptable?
+  end
+
+  test "should not create a new token if token exists" do
+    token_one = Proposal::Token.new email: email,
+      proposable_type: User.to_s
+
+    token_two = Proposal::Token.new email: email,
+      proposable_type: User.to_s
+
+    errors = { email: ["already has an outstanding proposal"] }
+
+    assert_equal true, token_one.save
+    assert_equal false, token_two.save
+    assert_equal errors, token_two.errors.messages
   end
 end
