@@ -183,14 +183,29 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal true, proposal.invite?
   end
 
-  test "should not return proposal action remind" do
+  test "should have action remind for invite (new user)" do
+    existing = User.propose.to email
+    existing.save!
+
+    proposal = User.propose.to email
+
+    assert_equal true, proposal.remind?
+    assert_equal true, proposal.notify_remind?
+    assert_equal false, proposal.invite_remind?
+    assert_equal :notify_remind, proposal.action
+  end
+
+  test "should have action remind for notify (existing user)" do
     user = User.create email: email
     existing = User.propose.to email
     existing.save!
 
     proposal = User.propose.to email
-    assert_equal :remind, proposal.action
+
     assert_equal true, proposal.remind?
+    assert_equal true, proposal.invite_remind?
+    assert_equal false, proposal.notify_remind?
+    assert_equal :invite_remind, proposal.action
   end
 
   test "should not return no action if accepted" do

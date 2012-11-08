@@ -113,7 +113,15 @@ module Proposal
     end
 
     def remind?
-      action == :remind
+      [:notify_remind, :invite_remind].include? action
+    end
+
+    def notify_remind?
+      action == :notify_remind
+    end
+
+    def invite_remind?
+      action == :invite_remind
     end
 
     def accepted?
@@ -141,14 +149,15 @@ module Proposal
     end
 
     # Sets +Time.now+ for the +reminded_at+ field in the database if the
-    # proposal action is +:remind+. This method can be called repeatedly.
+    # proposal action is +:notify_remind+ or +:invite_remind+. This method can
+    # be called repeatedly.
     def reminded
       touch :reminded_at if remind?
       remind?
     end
 
     # Equivalent to +reminded+ except it will raise a +Proposal::RemindError+ if
-    # the proposal action is not +:remind+
+    # the proposal action is not +:notify_remind+ or +:invite_remind+.
     def reminded!
       raise Proposal::RemindError, 'proposal action is not remind' unless remind?
       reminded
@@ -185,7 +194,8 @@ module Proposal
     # only be called if the the proposable is acceptable.
     def acceptable_action
       case
-      when persisted? then :remind
+      when persisted? && recipient then :invite_remind
+      when persisted? && !recipient then :notify_remind
       when recipient.nil? then :invite
       else :notify
       end

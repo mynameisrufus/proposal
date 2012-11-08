@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    proposal (0.0.3)
+    proposal (0.0.4)
       rails (~> 3.2)
 
 GEM

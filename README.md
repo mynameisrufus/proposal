@@ -63,7 +63,7 @@ reminder.
 
 ```ruby
 @proposal = User.propose(@project).to('user@example.com')
-@proposal.action #=> :remind
+@proposal.action #=> :invite_remind
 if @proposal.reminded
   # send out reminder
 end
