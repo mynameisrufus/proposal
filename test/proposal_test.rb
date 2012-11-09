@@ -190,9 +190,9 @@ class ProposalTest < ActiveSupport::TestCase
     proposal = User.propose.to email
 
     assert_equal true, proposal.remind?
-    assert_equal true, proposal.notify_remind?
-    assert_equal false, proposal.invite_remind?
-    assert_equal :notify_remind, proposal.action
+    assert_equal true, proposal.invite_remind?
+    assert_equal false, proposal.notify_remind?
+    assert_equal :invite_remind, proposal.action
   end
 
   test "should have action remind for notify (existing user)" do
@@ -203,9 +203,9 @@ class ProposalTest < ActiveSupport::TestCase
     proposal = User.propose.to email
 
     assert_equal true, proposal.remind?
-    assert_equal true, proposal.invite_remind?
-    assert_equal false, proposal.notify_remind?
-    assert_equal :invite_remind, proposal.action
+    assert_equal true, proposal.notify_remind?
+    assert_equal false, proposal.invite_remind?
+    assert_equal :notify_remind, proposal.action
   end
 
   test "should not return no action if accepted" do
@@ -216,13 +216,29 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal nil, proposal.action
   end
 
-  test "should set reminded" do
+  test "should raise error if remind is not true" do
+    proposal = User.propose.to email
+    assert_raises(Proposal::RemindError) { proposal.reminded! }
+  end
+
+  test "should set reminded safe" do
+    user = User.create email: email
+    existing = User.propose.to email
+    existing.save!
+
+    proposal = User.propose.to email
+    assert_equal true, proposal.reminded
+    assert_equal true, proposal.reminded?
+  end
+
+  test "should set reminded bang" do
     user = User.create email: email
     existing = User.propose.to email
     existing.save!
 
     proposal = User.propose.to email
     assert_equal true, proposal.reminded!
+    assert_equal true, proposal.reminded?
   end
 
   test "should find and accept proposal" do

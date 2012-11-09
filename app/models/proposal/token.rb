@@ -148,6 +148,10 @@ module Proposal
       !expired? && !accepted?
     end
 
+    def reminded?
+      !reminded_at.nil?
+    end
+
     # Sets +Time.now+ for the +reminded_at+ field in the database if the
     # proposal action is +:notify_remind+ or +:invite_remind+. This method can
     # be called repeatedly.
@@ -194,8 +198,8 @@ module Proposal
     # only be called if the the proposable is acceptable.
     def acceptable_action
       case
-      when persisted? && recipient then :invite_remind
-      when persisted? && !recipient then :notify_remind
+      when persisted? && recipient then :notify_remind
+      when persisted? && !recipient then :invite_remind
       when recipient.nil? then :invite
       else :notify
       end
