@@ -6,6 +6,8 @@ class CreateProposalTokens < ActiveRecord::Migration
       t.string  :proposable_type, null: false
       t.string  :resource_type
       t.integer :resource_id
+      t.string  :proposer_type
+      t.integer :proposer_id
       t.text    :arguments
 
       t.datetime :accepted_at

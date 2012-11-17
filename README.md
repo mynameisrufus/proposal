@@ -1,4 +1,4 @@
-# Proposal
+# Proposal [![CI Build Status](https://secure.travis-ci.org/mynameisrufus/proposal.png)]
 
 Simple unobtrusive token invitation engine for use with any authentication
 framework. Makes no fuss and no redundant records.
@@ -24,6 +24,10 @@ Then run migrations to add the `proposal_tokens` table:
 class User < ActiveRecord::Base
   can_propose
 end
+
+class Project < ActiveRecord::Base
+  has_proposals
+end
 ```
 
 ## Making Proposals
@@ -32,6 +36,13 @@ For a basic proposal to the application you simply call:
 
 ```ruby
 @proposal = User.propose.to('user@example.com')
+```
+
+Or
+
+```ruby
+@proposal = @user.propose.to('user@example.com')
+@proposal.proposer # => User
 ```
 
 When your token is returned you need to check what to do next, for example if

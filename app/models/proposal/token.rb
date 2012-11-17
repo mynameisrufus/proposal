@@ -2,6 +2,7 @@ module Proposal
   class Token < ActiveRecord::Base
 
     belongs_to :resource, polymorphic: true
+    belongs_to :proposer, polymorphic: true
 
     serialize :arguments
 
@@ -11,7 +12,8 @@ module Proposal
       :proposable_type,
       :expires,
       :expects,
-      :resource
+      :resource,
+      :proposer
 
     attr_writer :expects
 

@@ -20,14 +20,6 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal user, proposal.recipient
   end
 
-  test "should return proposals for instance" do
-    user = User.create email: email
-    project = Project.create!
-    proposal = User.propose(project).to(email)
-    proposal.save
-    assert_equal [proposal], project.proposals 
-  end
-
   test "should add errors when not acceptable accepted safe" do
     errors = {:token=>["has been accepted"]}
     proposal = User.propose.to email
@@ -287,5 +279,22 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal true, token_one.save
     assert_equal false, token_two.save
     assert_equal errors, token_two.errors.messages
+  end
+
+  test "should return proposals for resource instance" do
+    user = User.create email: email
+    project = Project.create!
+    proposal = User.propose(project).to(email)
+    proposal.save
+
+    assert_equal [proposal], project.proposals 
+  end
+
+  test "should return proposals for proposer instance" do
+    user = User.create email: email
+    proposal = user.propose.to email
+    proposal.save
+
+    assert_equal [proposal], user.proposals
   end
 end
