@@ -6,15 +6,6 @@ module Proposal
 
     serialize :arguments
 
-    attr_accessible :email,
-      :arguments,
-      :proposable,
-      :proposable_type,
-      :expires,
-      :expects,
-      :resource,
-      :proposer
-
     attr_writer :expects
 
     validates_presence_of :email,
