@@ -51,15 +51,15 @@ module Proposal
       errors.add :token, "has been accepted" if accepted?
     end
 
-    scope :pending, where('accepted_at IS NULL')
+    scope :pending, ->{ where('accepted_at IS NULL') }
 
-    scope :accepted, where('accepted_at IS NOT NULL')
+    scope :accepted, ->{ where('accepted_at IS NOT NULL') }
 
-    scope :expired, where('expires_at < ?', Time.now)
+    scope :expired, ->{ where('expires_at < ?', Time.now) }
 
-    scope :not_expired, where('expires_at > ?', Time.now)
+    scope :not_expired, ->{ where('expires_at > ?', Time.now) }
 
-    scope :reminded, where('reminded_at IS NOT NULL')
+    scope :reminded, ->{ where('reminded_at IS NOT NULL') }
 
     def expects
       @expects || proposable.proposal_options[:expects]
