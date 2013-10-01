@@ -129,8 +129,14 @@ end
 
 ## Supported Ruby Versions
 
-* Ruby 1.9.2
+* Ruby 2.0.0
 * Ruby 1.9.3
+* Ruby 1.9.2
+
+## Supported Rails Versions
+
+* Rails 4
+* (Stick to proposal version 0.0.6 for Rails 3.x)
 
 ## Contributing
 
