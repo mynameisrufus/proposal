@@ -1,4 +1,4 @@
-# Proposal [![CI Build Status](https://secure.travis-ci.org/mynameisrufus/proposal.png)]
+# Proposal [![Build Status](https://travis-ci.org/mynameisrufus/proposal.png?branch=master)](https://travis-ci.org/mynameisrufus/proposal)
 
 Simple unobtrusive token invitation engine for use with any authentication
 framework. Makes no fuss and no redundant records.
