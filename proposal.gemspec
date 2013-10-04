@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.email       = ["rufuspost@gmail.com"]
   s.homepage    = "https://github.com/mynameisrufus/proposal"
   s.summary     = "Simple unobtrusive token invitation engine for rails"
+  s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["Rakefile"]
   s.test_files = Dir["test/**/*"]
