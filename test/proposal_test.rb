@@ -48,8 +48,8 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "should respond to the resource" do
+    User.create email: email
     project = Project.create!
-    user = User.create email: email
     proposal = User.propose(project).to email
     assert_equal project, proposal.resource
   end
@@ -163,7 +163,7 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "should not return proposal action notify" do
-    user = User.create email: email
+    User.create email: email
     proposal = User.propose.to email
     assert_equal :notify, proposal.action
     assert_equal true, proposal.notify?
@@ -188,7 +188,7 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "should have action remind for notify (existing user)" do
-    user = User.create email: email
+    User.create email: email
     existing = User.propose.to email
     existing.save!
 
@@ -214,7 +214,7 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "should set reminded safe" do
-    user = User.create email: email
+    User.create email: email
     existing = User.propose.to email
     existing.save!
 
@@ -224,7 +224,7 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "should set reminded bang" do
-    user = User.create email: email
+    User.create email: email
     existing = User.propose.to email
     existing.save!
 
@@ -235,7 +235,7 @@ class ProposalTest < ActiveSupport::TestCase
 
   test "should find and accept proposal" do
     email = "user@example.com"
-    user = User.create email: email
+    User.create email: email
     proposal = User.propose.to email
     proposal.save
 
@@ -256,7 +256,7 @@ class ProposalTest < ActiveSupport::TestCase
 
   test "should create a new token if accepted token exists" do
     project = Project.create!
-    user = User.create email: email
+    User.create email: email
     existing = User.propose(project).to email
     existing.save!
     existing.accept!
@@ -282,12 +282,12 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "should return proposals for resource instance" do
-    user = User.create email: email
+    User.create email: email
     project = Project.create!
     proposal = User.propose(project).to(email)
     proposal.save
 
-    assert_equal [proposal], project.proposals 
+    assert_equal [proposal], project.proposals
   end
 
   test "should return proposals for proposer instance" do

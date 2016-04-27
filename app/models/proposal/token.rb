@@ -62,7 +62,7 @@ module Proposal
     scope :reminded, ->{ where('reminded_at IS NOT NULL') }
 
     def expects
-      @expects || proposable.proposal_options[:expects]
+      @expects ||= proposable.proposal_options[:expects]
     end
 
     def proposable
