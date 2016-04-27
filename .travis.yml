@@ -3,4 +3,4 @@ rvm:
   - 2.2.2
   - ruby-head
 script:
-  - bundle exec rake db:migrate
+  - bundle exec rake db:migrate test
