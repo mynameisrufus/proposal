@@ -18,6 +18,7 @@ module Proposal
     }
 
     validates_with ::Proposal::EmailValidator
+    validates_with ::Proposal::ProposableValidator
 
     before_validation on: :create do
       self.token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
