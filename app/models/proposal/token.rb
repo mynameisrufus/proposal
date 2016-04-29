@@ -10,7 +10,6 @@ module Proposal
 
     validates_presence_of :email,
       :token,
-      :proposable,
       :proposable_type,
       :expires_at
 
