@@ -1,7 +1,7 @@
 module Proposal
   class Token < ActiveRecord::Base
 
-    belongs_to :resource, polymorphic: true
+    belongs_to :resource, polymorphic: true, optional: true
     belongs_to :proposer, polymorphic: true
 
     serialize :arguments
