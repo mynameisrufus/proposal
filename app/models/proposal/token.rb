@@ -172,11 +172,11 @@ module Proposal
     end
 
     # Equivalent +accept+ except it will raise a +Proposal::ExpiredError+ if the
-    # proposal has expired or a +Proposal::AccepetedError+ if the proposal has
+    # proposal has expired or a +Proposal::AcceptedError+ if the proposal has
     # already been accepted.
     def accept!
       raise Proposal::ExpiredError, 'token has expired' if expired?
-      raise Proposal::AccepetedError, 'token has been used' if accepted?
+      raise Proposal::AcceptedError, 'token has been used' if accepted?
       touch :accepted_at
       true
     end
