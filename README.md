@@ -1,4 +1,4 @@
-# Proposal [![Build Status](https://travis-ci.org/mynameisrufus/proposal.png?branch=master)](https://travis-ci.org/mynameisrufus/proposal)
+# Proposal [![Build Status](https://travis-ci.org/mynameisrufus/proposal.png?branch=master)](https://travis-ci.org/mynameisrufus/proposal) [![Code Climate](https://codeclimate.com/github/mynameisrufus/proposal/badges/gpa.svg)](https://codeclimate.com/github/mynameisrufus/proposal)
 
 Simple unobtrusive token invitation engine for use with any authentication
 framework. Makes no fuss and no redundant records.
