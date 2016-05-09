@@ -58,6 +58,7 @@ class ProposalTest < ActiveSupport::TestCase
     proposal = User.propose.to email
     proposal.save
 
+    assert_equal true, proposal.persisted?
     assert_equal proposal.token.class, String
   end
 
