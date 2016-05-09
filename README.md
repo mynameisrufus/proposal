@@ -130,6 +130,7 @@ end
 ## Supported Ruby Versions
 
 * Ruby 2.2.2+
+* Stick to proposal version 1.0.0 for older Ruby versions
 
 ## Supported Rails Versions
 
