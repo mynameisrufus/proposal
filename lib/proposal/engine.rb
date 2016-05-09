@@ -2,7 +2,7 @@ module Proposal
 
   class ExpiredError < StandardError; end
 
-  class AccepetedError < StandardError; end
+  class AcceptedError < StandardError; end
 
   class RemindError < StandardError; end
 
