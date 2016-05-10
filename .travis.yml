@@ -2,5 +2,8 @@ language: ruby
 rvm:
   - 2.2.2
   - ruby-head
+
+bundler_args: --without guard
+
 script:
-  - bundle exec rake db:migrate test
+  - bundle exec rake db:migrate test rubocop

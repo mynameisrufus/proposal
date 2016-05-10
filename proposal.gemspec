@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 5.0.0.beta3", "< 5.1"
 
   s.add_development_dependency "sqlite3"
+  s.add_development_dependency "rubocop"
 end
