@@ -42,8 +42,14 @@ module Proposal
   end
 
   module CanProposeInstanceMethods
+    # Sent
     def proposals
       Adapter.where proposer_type: self.class.to_s, proposer_id: self.id
+    end
+
+    # Received
+    def propositions
+      Adapter.where proposer_type: self.class.to_s, email: self.email
     end
 
     def propose resource = nil
