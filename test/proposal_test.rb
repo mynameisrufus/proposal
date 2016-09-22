@@ -5,6 +5,10 @@ class ProposalTest < ActiveSupport::TestCase
     "user@example.com"
   end
 
+  def email2
+    "user2@example.com"
+  end
+
   test "truth" do
     assert_kind_of Module, Proposal
   end
@@ -297,5 +301,14 @@ class ProposalTest < ActiveSupport::TestCase
     proposal.save
 
     assert_equal [proposal], user.proposals
+  end
+
+  test "should return proposals received by proposer instance" do
+    user1 = User.create email: email
+    user2 = User.create email: email2
+    proposal = user1.propose.to email2
+    proposal.save
+
+    assert_equal [proposal], user2.proposals(received: true)
   end
 end
