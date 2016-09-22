@@ -39,6 +39,8 @@ module Proposal
     def proposals
       Adapter.where resource_type: self.class.to_s, resource_id: self.id
     end
+
+    alias_method :proposals_received, :proposals
   end
 
   module CanProposeInstanceMethods
