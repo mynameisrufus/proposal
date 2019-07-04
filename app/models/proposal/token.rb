@@ -9,9 +9,9 @@ module Proposal
     attr_writer :expects
 
     validates_presence_of :email,
-      :token,
-      :proposable_type,
-      :expires_at
+                          :token,
+                          :proposable_type,
+                          :expires_at
 
     validates_with ::Proposal::ArgumentsValidator, if: -> {
       expects.present?
@@ -34,11 +34,11 @@ module Proposal
 
     def validate_uniqueness
       if self.class.pending.not_expired.where({
-          email: self.email,
+                                                email: self.email,
           proposable_type: self.proposable_type,
           resource_type: self.resource_type,
           resource_id: self.resource_id
-        }).exists?
+                                              }).exists?
         errors.add :email, "already has an outstanding proposal"
       end
     end
@@ -75,6 +75,7 @@ module Proposal
 
     def recipient!
       raise Proposal::RecordNotFound if recipient.nil?
+
       recipient
     end
 
@@ -130,6 +131,7 @@ module Proposal
       unless expires_proc.is_a? Proc
         raise ArgumentError, 'expires must be a proc'
       end
+
       self.expires_at = expires_proc.call
     end
 
@@ -157,6 +159,7 @@ module Proposal
     # the proposal action is not +:notify_remind+ or +:invite_remind+.
     def reminded!
       raise Proposal::RemindError, 'proposal action is not remind' unless remind?
+
       reminded
     end
 
@@ -177,6 +180,7 @@ module Proposal
     def accept!
       raise Proposal::ExpiredError, 'token has expired' if expired?
       raise Proposal::AcceptedError, 'token has been used' if accepted?
+
       touch :accepted_at
       true
     end

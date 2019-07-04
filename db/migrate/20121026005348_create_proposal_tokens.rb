@@ -1,4 +1,4 @@
-class CreateProposalTokens < ActiveRecord::Migration
+class CreateProposalTokens < ActiveRecord::Migration[5.0]
   def up
     create_table :proposal_tokens do |t|
       t.string  :token,           null: false
@@ -19,15 +19,15 @@ class CreateProposalTokens < ActiveRecord::Migration
 
     add_index :proposal_tokens, :token, unique: true
 
-    execute <<-SQL
-CREATE UNIQUE INDEX proposal_idx ON proposal_tokens (
-  email,
-  proposable_type,
-  resource_type,
-  resource_id,
-  expires_at,
-  accepted_at
-)
+    execute <<~SQL
+      CREATE UNIQUE INDEX proposal_idx ON proposal_tokens (
+        email,
+        proposable_type,
+        resource_type,
+        resource_id,
+        expires_at,
+        accepted_at
+      )
     SQL
   end
 

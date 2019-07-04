@@ -142,7 +142,7 @@ class ProposalTest < ActiveSupport::TestCase
   test "should validate arguments with a proc" do
     error_messages = ["is invalid"]
     errors = { arguments: error_messages }
-    proposal = User.propose.to email, expects: -> arguments {
+    proposal = User.propose.to email, expects: ->arguments {
       !arguments.nil? && !arguments.empty?
     }
 
@@ -159,7 +159,7 @@ class ProposalTest < ActiveSupport::TestCase
 
   test "should not return proposal instance" do
     proposal = User.propose.to email
-    assert_equal nil, proposal.recipient
+    assert_nil proposal.recipient
     assert_raises(Proposal::RecordNotFound) { proposal.recipient! }
   end
 
@@ -206,7 +206,7 @@ class ProposalTest < ActiveSupport::TestCase
     proposal.save!
     proposal.accept!
 
-    assert_equal nil, proposal.action
+    assert_nil proposal.action
   end
 
   test "should raise error if remind is not true" do
